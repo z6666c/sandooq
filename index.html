@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>الصندوق — لعبة ألغاز ميكانيكية</title>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@500;700;900&display=swap" rel="stylesheet">
+<style>
+  :root{ --cream:#F3E7CF; --brass:#C9962B; --wood:#2B1D14; --line:#6B4A2E; }
+  *{ box-sizing:border-box; }
+  body{ margin:0; min-height:100vh; background:#0a0604 radial-gradient(ellipse at 50% 30%, #2b1d14 0%, #0a0604 70%); color:var(--cream); font-family:Cairo,system-ui,sans-serif; display:flex; align-items:center; justify-content:center; padding:24px; }
+  .wrap{ max-width:520px; width:100%; text-align:center; }
+  h1{ font-size:64px; margin:0; line-height:1; }
+  .sub{ color:var(--brass); font-weight:700; letter-spacing:1px; margin:8px 0 18px; }
+  p{ color:#D9C39A; line-height:1.8; }
+  .ch{ display:flex; align-items:center; gap:14px; text-decoration:none; color:var(--cream); background:rgba(43,29,20,.85); border:2px solid var(--line); border-radius:16px; padding:14px 16px; margin:10px 0; text-align:right; }
+  .ch:hover{ border-color:var(--brass); }
+  .n{ width:44px; height:44px; border-radius:12px; background:var(--brass); color:var(--wood); font-weight:900; font-size:22px; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+  .t{ font-weight:900; font-size:18px; }
+  .d{ font-size:13px; color:#D9C39A; }
+  .stars{ margin-inline-start:auto; color:var(--brass); font-size:16px; white-space:nowrap; }
+  .foot{ font-size:12px; color:#8E7A5C; margin-top:18px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="sub">لعبة ألغاز ميكانيكية ثلاثية الأبعاد</div>
+  <h1>الصندوق</h1>
+  <p>ورشةُ ساعاتيّ مهجورة، وأربعة فصول من الألغاز الميكانيكية: صناديق تُفتح، خزنةٌ تُدار، قبةٌ تنفتح على النجوم، وآلةٌ في القبو تنتظر من يجرؤ.</p>
+  <a class="ch" href="ch1.html"><div class="n">١</div><div><div class="t">الصندوق</div><div class="d">الصندوق، صندوق الموسيقى، ودرج الطاولة</div></div><div class="stars" data-ch="ch1"></div></a>
+  <a class="ch" href="ch2.html"><div class="n">٢</div><div><div class="t">الخزنة</div><div class="d">العدسة، الأزرار، الفانوس والمرايا، القرص</div></div><div class="stars" data-ch="ch2"></div></a>
+  <a class="ch" href="ch3.html"><div class="n">٣</div><div><div class="t">المرصد</div><div class="d">الأسطرلاب، التلسكوب، الأذرع، والقبة</div></div><div class="stars" data-ch="ch3"></div></a>
+  <a class="ch" href="ch4.html"><div class="n">٤</div><div><div class="t">القبو — الآلة الأخيرة</div><div class="d">الغلايات، الأنابيب، مفتاح الزمن، الساعة</div></div><div class="stars" data-ch="ch4"></div></a>
+  <div class="foot">يعمل على الجوال والمتصفح · اسحب لتدوير المشهد، قرّب بإصبعين، والمس الأشياء أو اسحبها.</div>
+</div>
+<script>
+try { const p = JSON.parse(localStorage.getItem('sandooq_progress') || '{}'); document.querySelectorAll('.stars').forEach(el => { const c = p[el.dataset.ch]; el.textContent = c && c.done ? '★'.repeat(c.stars) + '☆'.repeat(3 - c.stars) : ''; }); } catch (e) {}
+</script>
+</body>
+</html>
