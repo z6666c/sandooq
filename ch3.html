@@ -1016,6 +1016,68 @@
     else renderer.render(scene, camera);
     requestAnimationFrame(loop);
   }
+  // ---------- Desktop controls: smooth orbit, hover cursor, keyboard, double-click focus, control panel ----------
+  (function desktopControls(){
+    const INIT = { theta: cam.theta, phi: cam.phi, r: cam.r, t: target.clone() };
+    const view = { theta: cam.theta, phi: cam.phi, r: cam.r }; cam.view = view;
+    const _place = placeCamera;
+    placeCamera = function(){
+      const k = 0.3;
+      let dT = cam.theta - view.theta; while (dT > Math.PI) dT -= Math.PI*2; while (dT < -Math.PI) dT += Math.PI*2;
+      view.theta += dT * k; view.phi += (cam.phi - view.phi) * k; view.r += (cam.r - view.r) * k;
+      const s = { theta: cam.theta, phi: cam.phi, r: cam.r };
+      cam.theta = view.theta; cam.phi = view.phi; cam.r = view.r; _place(); cam.theta = s.theta; cam.phi = s.phi; cam.r = s.r;
+    };
+    const fine = window.matchMedia && window.matchMedia('(hover: hover) and (pointer: fine) and (min-width: 700px)').matches;
+    // hover cursor
+    let hoverT = 0;
+    canvas.style.cursor = 'grab';
+    canvas.addEventListener('pointermove', e => {
+      if (e.pointerType !== 'mouse' || e.buttons) return;
+      const now = performance.now(); if (now - hoverT < 60) return; hoverT = now;
+      try { const m = pick(e.clientX, e.clientY); canvas.style.cursor = m ? 'pointer' : 'grab'; } catch (err) { /* ignore */ }
+    });
+    canvas.addEventListener('pointerdown', e => { if (e.pointerType === 'mouse') canvas.style.cursor = 'grabbing'; });
+    window.addEventListener('pointerup', () => { if (canvas.style.cursor === 'grabbing') canvas.style.cursor = 'grab'; });
+    // keyboard
+    const overlayOpen = () => !!document.querySelector('.overlay.show');
+    window.addEventListener('keydown', e => {
+      if (e.target && (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA')) return;
+      const k = e.key.toLowerCase();
+      if (k === 'escape'){ document.querySelectorAll('.overlay.show:not(#intro)').forEach(o => { const c = o.querySelector('.close, #btnCloseLetter, #btnCloseSky, #btnCloseNote'); if (c) c.click(); }); return; }
+      if (overlayOpen()) return;
+      const step = e.shiftKey ? 0.18 : 0.09;
+      if (k === 'arrowleft' || k === 'a'){ cancelTweens('cam'); cam.theta += step; }
+      else if (k === 'arrowright' || k === 'd'){ cancelTweens('cam'); cam.theta -= step; }
+      else if (k === 'arrowup' || k === 'w'){ cancelTweens('cam'); cam.phi = clamp(cam.phi - step * 0.6, 0.3, 1.5); }
+      else if (k === 'arrowdown' || k === 's'){ cancelTweens('cam'); cam.phi = clamp(cam.phi + step * 0.6, 0.3, 1.5); }
+      else if (k === '+' || k === '=' || k === 'e'){ cancelTweens('cam'); cam.r = clamp(cam.r * 0.88, 1.6, 9); }
+      else if (k === '-' || k === '_' || k === 'q'){ cancelTweens('cam'); cam.r = clamp(cam.r * 1.14, 1.6, 9); }
+      else if (k === 'r' || k === 'home'){ focusCamera(INIT.theta, INIT.phi, INIT.r, 800, INIT.t); }
+      else if (k === 'h'){ const b = document.getElementById('btnHint'); if (b) b.click(); }
+      else if (k === 'l'){ const b = document.getElementById('btnLetter'); if (b) b.click(); }
+      else return;
+      e.preventDefault();
+    });
+    // gentler wheel zoom (smoothed by the view lerp above)
+    // on-screen panel for mouse users
+    if (fine){
+      const st = document.createElement('style');
+      st.textContent = '#dpanel{position:fixed;left:16px;top:50%;transform:translateY(-50%);display:flex;flex-direction:column;gap:8px;z-index:5}#dpanel button{width:44px;height:44px;border-radius:12px;border:2px solid var(--line);background:rgba(58,40,25,.9);color:var(--cream);font:inherit;font-size:20px;font-weight:900;cursor:pointer;backdrop-filter:blur(6px)}#dpanel button:hover{border-color:var(--brass);color:var(--brass)}#dtip{position:fixed;left:16px;bottom:calc(env(safe-area-inset-bottom) + 88px);font-size:11.5px;color:#8E7A5C;font-weight:700;max-width:220px;line-height:1.6;pointer-events:none;z-index:5}';
+      document.head.appendChild(st);
+      const panel = document.createElement('div'); panel.id = 'dpanel';
+      const mk = (txt, title, fn) => { const b = document.createElement('button'); b.textContent = txt; b.title = title; b.addEventListener('click', () => { snd('click'); fn(); }); panel.appendChild(b); };
+      mk('＋', 'تقريب (E)', () => { cancelTweens('cam'); cam.r = clamp(cam.r * 0.8, 1.6, 9); });
+      mk('－', 'إبعاد (Q)', () => { cancelTweens('cam'); cam.r = clamp(cam.r * 1.25, 1.6, 9); });
+      mk('⟲', 'إعادة الكاميرا (R)', () => focusCamera(INIT.theta, INIT.phi, INIT.r, 800, INIT.t));
+      mk('⬆', 'نظرة من أعلى', () => { cancelTweens('cam'); cam.phi = clamp(cam.phi - 0.35, 0.3, 1.5); });
+      mk('⬇', 'نظرة من الأمام', () => { cancelTweens('cam'); cam.phi = clamp(cam.phi + 0.35, 0.3, 1.5); });
+      document.body.appendChild(panel);
+      const tip = document.createElement('div'); tip.id = 'dtip'; tip.innerHTML = 'الماوس: اسحب للتدوير · العجلة للتقريب<br>الكيبورد: الأسهم أو WASD للتدوير · E / Q تقريب · R إعادة · H تلميح · L الرسالة · Esc إغلاق';
+      document.body.appendChild(tip);
+    }
+  })();
+
   placeCamera();
   requestAnimationFrame(loop);
   if (document.fonts && document.fonts.ready){ document.fonts.ready.then(() => { try { paper.map = letterTexture(); if (CH.refonts) CH.refonts(); } catch (e) { /* keep */ } }); }
